@@ -1,0 +1,103 @@
+---
+title: "Biostatistics"
+output:
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+description: >
+  Introduction to R and some of its uses.
+---
+
+```{r setup, include=FALSE}
+
+library(learnr)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+
+water <- read_csv('goleta_rainfall_discharge.csv') %>% 
+  mutate(type = factor(type, levels = c('Rainfall','Discharge')))
+
+tutorial_options(exercise.timelimit = 10)
+
+```
+
+## Introduction
+
+Introduction to R and some of its uses.
+
+### Outline
+
+Here we will learn what R is!
+
+What we will cover:
+
+* What is R?
+* How are we using R?
+
+## What is R?
+
+### R is a statistical programming language.
+
+Let's look at some of the things R can do...
+
+### At its most very basic, R is a calculator:
+
+*Press the blue "Run Code" button!*
+
+```{r addition, exercise=TRUE}
+
+48 + 390
+
+```
+
+There are many operators.
+
+* `+` add
+* `-` subtract
+* `*` multiply
+* `/` divide
+
+### At more advanced levels, it can be used to produce beautiful graphics:
+
+```{r discharge_plot, exercise=TRUE}
+
+water_plot <- ggplot(water) +
+  geom_area(aes(x = date, y = value, fill = type)) +
+  scale_fill_manual(values = c('turquoise', 'darkblue')) +
+  theme_minimal() +
+  theme(strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        legend.position = 'none') +
+  facet_wrap(~type, ncol=1, scales = 'free_y') +
+  labs(x = '',
+       y = 'Avg Discharge (ft^3/s)     Total Rainfall (inches)',
+       title = 'Rainfall and Stream Discharge in Goleta, CA (2019)')
+
+ggplotly(water_plot) %>%
+  config(displayModeBar = F) 
+
+```
+
+*Try mousing over the plot, and zooming!*
+
+### Other things R can do
+
+* Produce documents
+* Build websites
+* In fact, this tutorial was made using R!
+
+### 
+
+We will be using R to run statistical tests (t-tests and ANOVAs), and produce bar charts.
+
+## Citations
+
+Discharge data from USGS WaterWatch, Site 11120000 - Atascadero Creek, Goleta, CA:
+https://waterdata.usgs.gov/nwis/dv?referred_module=sw&site_no=11120000
+https://waterdata.usgs.gov/nwis/dv?cb_00060=on&cb_80155=on&format=rdb&site_no=11120000&referred_module=sw&period=&begin_date=2019-01-01&end_date=2019-12-31
+
+Rainfall data from County of Santa Barbara Public Works rainfall data, sensor at San Marcos Pass:
+https://rain.cosbpw.net/site.php?site_id=84&site=8339086e-5a78-4a4c-bec3-7344f97a0a80
+https://rain.cosbpw.net/sensor.php?time_zone=US%2FPacific&site_id=84&site=8339086e-5a78-4a4c-bec3-7344f97a0a80&device_id=2&device=44a7898b-47ed-4fee-9d83-067edccbfcd0&data_start=2019-01-01+00%3A00%3A00&data_end=2019-12-31+23%3A59%3A59&bin=86400&range=Custom+Range&legend=true&thresholds=true&refresh=off&show_raw=true&show_quality=true
