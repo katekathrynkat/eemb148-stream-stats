@@ -1,0 +1,68 @@
+---
+title: "EEMB 148 - HW 1"
+output:
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+runtime: shiny_prerendered
+description: >
+  Algal analysis for HW 1.
+---
+
+```{r setup, include=FALSE}
+
+# Necessary packages:
+
+library(learnr)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+
+# Data for Goleta rainfall/discharge:
+
+water <- read_csv('goleta_rainfall_discharge.csv') %>% 
+  mutate(type = factor(type, levels = c('Rainfall', 'Discharge'))) %>% 
+  mutate(date = dmy(date))
+
+water2 <- water %>% 
+  pivot_wider(names_from = type, values_from = value) %>% 
+  select(date, Rainfall, Discharge) %>% 
+  rename(Date = date)
+
+labs <- c("Daily Rainfall (in)", "Average Discharge (cubic ft/s)")
+names(labs) <- c("Rainfall", "Discharge")
+
+# Data for Sierra streams:
+
+algae <- read_csv('week2_algae.csv') %>% 
+  gather(key = stream_type, value = algal_biomass) %>% 
+  mutate(stream_type = case_when(
+    stream_type == 'fish' ~ 'Trout',
+    stream_type == 'declining' ~ 'Declining',
+    TRUE ~ 'No Trout'
+  )) %>% 
+  mutate(stream_type = factor(stream_type, levels = c('No Trout', 'Declining', 'Trout'))) 
+
+algae2 <- algae %>% 
+  filter(stream_type != "Declining") %>% 
+  mutate(stream_type = factor(stream_type, levels = c('No Trout', 'Trout')))
+
+algae_wider <- algae %>% 
+  mutate(id = rep(1:50,3)) %>% 
+  pivot_wider(names_from = stream_type, values_from = algal_biomass) %>% 
+  select(-1) %>% 
+  select(Trout, Declining, `No Trout`)
+
+algae_anova <- aov(algal_biomass ~ stream_type, data = algae)
+
+# Tutorial options:
+
+tutorial_options(exercise.timelimit = 10)
+
+```
+
+## What is this tutorial?
+
+### Introduction to R for EEMB 148
+
+This tutorial will help you become familiar with R and how we'll be using it for EEMB 148. It is optional: there is *no graded assignment associated with this tutorial.* 
