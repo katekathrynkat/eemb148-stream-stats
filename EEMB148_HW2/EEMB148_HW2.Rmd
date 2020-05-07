@@ -1,0 +1,177 @@
+---
+title: "EEMB 148 - HW 2"
+subtitle: "Algal Assessment"
+output:
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+    theme: sandstone
+runtime: shiny_prerendered
+description: "Algal analysis for HW 2."
+---
+
+```{r setup, include=FALSE}
+
+# Necessary packages:
+
+library(learnr)
+library(tidyverse)
+library(agricolae)
+
+# Necessary data:
+
+afdm <- read_csv('afdm.csv') %>% 
+  select(site, transect, afdm)
+
+chla <- read_csv('chla.csv') %>% 
+  select(site, transect, chla) 
+
+# Data wrangling:
+
+algae <- full_join(afdm, chla) %>% 
+  select(-transect)
+
+# Tutorial options:
+
+tutorial_options(exercise.timelimit = 10)
+
+```
+
+<style type="text/css">
+.table {
+
+    width: 500px;
+
+}
+</style>
+
+## Study System
+
+### Santa Ana River
+
+The Santa Ana River flows through southern California, and its drainage basin includes extensive agricultural development.
+
+This study surveyed a stretch of the river near Riverside, which was affected by several agricultural alterations:
+
+- **Riparian vegetation** was removed to increase crop production area.
+- Crops were planted **directly adjacent** to the river.
+- **Pesticide and fertilizer** treatments were applied on a bi-monthly basis.
+
+<br>
+
+### Study Design
+
+A research team surveyed this stretch of the Santa Ana River in order to quantify changes in algal biomass associated with agricultural development. Within a 1000-m stretch of river spanning **both upstream and downstream of the agricultural area,** they measured Ash Free Dry Mass (AFDM) and Chlorophyll-*a* (Chl-*a*) concentrations.
+
+**Six sites** were chosen at random. Each site was named after a type of mammal that is common in riparian habitat: beaver, mouse, shrew, vole, weasel, and woodrat. At each site, **five replicates (measurements)** were taken for each parameter. Therefore, each parameter has $6*5=30$ total measurements.
+
+**Experimental Design:**
+
+- *Predictor Variable:* location (site)
+- *Response Variables:* AFDM and chl-*a*
+
+<br>
+
+### **Task:** Statistical Sleuthing
+
+Your goal is to determine which of the six sites were located downstream of agricultural development, as indicated by changes in algal biomass.
+
+You should be able to back up all claims by reporting statistical evidence.
+
+***Graded Assignment:*** *Homework #2 is formatted as a "quiz" on Gauchospace. Some of the questions ask you to use articles from the scientific literature, which you will be able to find on Gauchospace.*
+
+## AFDM and Chl-a Data
+
+The research team measured two algal parameters:
+
+| Variable Name | Algal Parameter | Units |
+| :- | :- | :- |
+| `afdm` | Ash Free Dry Mass (AFDM) | mg/L |
+| `chla` | Chlorophyll-*a* (Chl-*a*) | mg/L |
+
+Here is the algal data presented in a table. There are 30 rows, since there are 30 measurements for each parameter.
+
+```{r chemical-data, echo=FALSE}
+algae
+```
+
+## -- ANOVA
+
+$\bigstar$ **Task:** For both AFDM and Chl-*a*, run an ANOVA to determine whether the mean varies by site.
+
+The variable names are: `afdm` and `chla`.
+
+```{r physical-ANOVA, exercise=TRUE}
+
+# Run an ANOVA to determine whether the mean varies by site
+
+algae_anova <- aov(VARIABLE ~ site,
+                  data = algae)
+summary(algae_anova)
+
+```
+
+<div id="physical-ANOVA-hint">
+**Hint:** Replace the word `VARIABLE` with either `afdm` or `chla`. Press "Run Code". Find the ANOVA p-value labeled `Pr(>F)`.
+</div>
+
+## -- Tukey test
+
+$\bigstar$ **Task:** For both AFDM and Chl-*a*, run a Tukey test to determine which sites were different.
+
+The variable names are: `afdm` and `chla`.
+
+```{r physical-Tukey, exercise=TRUE}
+
+# Run a Tukey test using the output from the ANOVA
+
+algae_anova <- aov(VARIABLE ~ site,
+                  data = algae)
+algae_tukey <- HSD.test(algae_anova, "site")
+print(algae_tukey$groups)
+
+```
+
+<div id="physical-Tukey-hint">
+**Hint:** Replace the word `VARIABLE` with either `afdm` or `chla`. Find the mean values for each site listed under the name of the variable. Determine which sites are similar based on the letters they share.
+</div>
+
+## -- Bar graph
+
+$\bigstar$ **Task:** Visualize the data to determine which sites were affected by the agricultural development.
+
+The variable names are: `afdm` and `chla`.
+
+```{r physical-plot, exercise=TRUE, fig.width=5, fig.height=3}
+
+# Create a summary table for plotting:
+algae_summary <- algae %>% 
+  group_by(site) %>% 
+  summarise(
+    mean = mean(VARIABLE),
+    sd = sd(VARIABLE)
+  )
+
+# Create a graph using the summary table:
+ggplot(algae_summary, aes(x = site, y = mean)) +
+  geom_col() + 
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd),
+                width = 0.2, position = position_dodge(.9)) +
+  scale_y_continuous(expand = c(0,0)) +
+  theme_classic() +
+  labs(title = "Mean Algal Biomass",
+       x = "Site", y = "Algal Biomass")
+       
+```
+
+<div id="physical-plot-hint">
+**Hint:** You need to replace `VARIABLE` in the code **twice**.
+</div>
+
+## Sources
+
+**Congratulations, you've reached the end of this tutorial!** Wash your hands and get yourself a snack. (:
+
+Algal data modified from dataset courtesy of Thomas Even.
+
+Tutorial by Kate Culhane (kathrynculhane@ucsb.edu).

@@ -1,12 +1,13 @@
 ---
 title: "EEMB 148 - HW 1"
+subtitle: "Chemical and Physical Parameters"
 output:
   learnr::tutorial:
     progressive: true
     allow_skip: true
+    theme: sandstone
 runtime: shiny_prerendered
-description: >
-  Algal analysis for HW 1.
+description: "Algal analysis for HW 1."
 ---
 
 ```{r setup, include=FALSE}
@@ -15,45 +16,24 @@ description: >
 
 library(learnr)
 library(tidyverse)
-library(lubridate)
-library(plotly)
+library(agricolae)
 
-# Data for Goleta rainfall/discharge:
+# Necessary data:
 
-water <- read_csv('goleta_rainfall_discharge.csv') %>% 
-  mutate(type = factor(type, levels = c('Rainfall', 'Discharge'))) %>% 
-  mutate(date = dmy(date))
+chem_param <- read_csv('chemical_parameters.csv')
 
-water2 <- water %>% 
-  pivot_wider(names_from = type, values_from = value) %>% 
-  select(date, Rainfall, Discharge) %>% 
-  rename(Date = date)
+phys_param <- read_csv('physical_parameters.csv') %>% 
+  mutate(score = select(., substrate:riparian_right) %>%  rowSums())
 
-labs <- c("Daily Rainfall (in)", "Average Discharge (cubic ft/s)")
-names(labs) <- c("Rainfall", "Discharge")
+# Data wrangling:
 
-# Data for Sierra streams:
+chemical_parameters <- chem_param %>% 
+  arrange(site) %>% 
+  select(-location, -treatment, -replicate)
 
-algae <- read_csv('week2_algae.csv') %>% 
-  gather(key = stream_type, value = algal_biomass) %>% 
-  mutate(stream_type = case_when(
-    stream_type == 'fish' ~ 'Trout',
-    stream_type == 'declining' ~ 'Declining',
-    TRUE ~ 'No Trout'
-  )) %>% 
-  mutate(stream_type = factor(stream_type, levels = c('No Trout', 'Declining', 'Trout'))) 
-
-algae2 <- algae %>% 
-  filter(stream_type != "Declining") %>% 
-  mutate(stream_type = factor(stream_type, levels = c('No Trout', 'Trout')))
-
-algae_wider <- algae %>% 
-  mutate(id = rep(1:50,3)) %>% 
-  pivot_wider(names_from = stream_type, values_from = algal_biomass) %>% 
-  select(-1) %>% 
-  select(Trout, Declining, `No Trout`)
-
-algae_anova <- aov(algal_biomass ~ stream_type, data = algae)
+physical_parameters <- phys_param %>% 
+  arrange(site) %>% 
+  select(-location, -treatment, -replicate)
 
 # Tutorial options:
 
@@ -61,8 +41,294 @@ tutorial_options(exercise.timelimit = 10)
 
 ```
 
-## What is this tutorial?
+<style type="text/css">
+.table {
 
-### Introduction to R for EEMB 148
+    width: 500px;
 
-This tutorial will help you become familiar with R and how we'll be using it for EEMB 148. It is optional: there is *no graded assignment associated with this tutorial.* 
+}
+</style>
+
+## Study System
+
+### Santa Clara River
+
+The Santa Clara River flows through Ventura and Los Angeles counties. By southern California standards this river is relatively unaltered, although it does flow through some major urban areas. One major alteration has been the construction of sewage treatment plants along the river, which release treated water and are potential point sources of pollution. In the summer months, much of the Santa Clara flow comes from effluent from water treatment plants. Released effluent is often high in organic and inorganic nutrients, although large particulates are removed through partial chlorine treatment.
+
+This study surveyed a stretch of the river near a sewage treatment plant, which underwent several alterations:
+
+- Outflow from a **secondary sewage treatment plant**
+- Partial **channelization** in the vicinity of the sewage treatment plant
+- **Access road** constructed along one bank of the river
+
+<br>
+
+### Study Design
+
+A research team surveyed this stretch of the Santa Clara River in order to quantify the effects of the sewage treatment plant and associated disturbances on aquatic life. Within a 1000-m stretch of river spanning **both upstream and downstream of the sewage treatment plant,** they measured several physical and chemical parameters.
+
+Within this stretch of river, **6 sites** were chosen at random. Each site was named after a type of bird that is common in riparian habitat: flycatcher, warbler, wren, swallow, thrush, and dipper. At each site, **3 replicates (measurements)** were taken for each parameter. Therefore, each parameter has $6*3=18$ total measurements.
+
+**Experimental Design:**
+
+- *Predictor Variable:* location (site)
+- *Response Variables:* physical and chemical parameters
+
+<br>
+
+### **Task:** Statistical Sleuthing
+
+Your goal is to evaluate how the 6 sites were affected by the sewage treatment plant, as indicated by significant differences in chemical and physical parameters.
+
+1. Determine which of the 6 sites were located above vs. below the sewage treatment plant.
+2. Determine which side of the stream (left or right) the access road was on.
+3. Determine which of the 6 sites were closest to the sewage treatment plant where channelization occurred.
+
+You should be able to back up all claims by reporting statistical evidence.
+
+***Graded Assignment:*** *Homework #1 is formatted as a "quiz" on Gauchospace. The assignment is due at the beginning of section next week. You can take as much time as you need to complete the quiz. If you leave the quiz without submitting your attempt, Gauchospace will save your work so you can return later.*
+
+## Chemical Assessment
+
+The research team measured seven chemical parameters:
+
+| Variable Name | Chemical Parameter | Units |
+| :- | :- | :- |
+| `ph` | acidity | mg/L |
+| `do` | dissolved oxygen | mg/L |
+| `phosphate` | PO~4~ | mg/L |
+| `nitrogen` | total nitrogen | mg/L |
+| `ec` | electrical conductivity | $\mu$S/cm |
+| `temp` | temperature | $^{\circ}$ Celsius |
+| `turbidity` | turbidity | % light transmission |
+
+Here is the chemical parameter data presented in a table. Each chemical parameter has its own column. There are 18 rows, since there are 18 measurements for each parameter. Notice that each site has three measurements. Press "Next" to see the rest of the 18 rows.
+
+```{r chemical-data, echo=FALSE}
+chemical_parameters
+```
+
+***Why are the variable names so weird?*** *When we are coding in R, we usually choose short lowercase names for our variables because they are easy to type. We also use underscores instead of spaces, so that R doesn't get confused about which words are separate objects.*
+
+## -- ANOVA
+
+*Remember, we use ANOVA to determine whether the* ***means of three or more groups*** *are significantly different.*
+
+$\bigstar$ **Task:** For each of the seven chemical parameters, run an ANOVA to determine whether the mean varies by site.
+
+1. In the code below, replace the word `VARIABLE` with the variable name for the chemical parameter.
+2. Press "Run Code".
+3. Find the ANOVA p-value in the statistical output: it is labeled `Pr(>F)`.
+4. Based on this output, decide whether there is a significant or insignificant difference between sites. Look at the section slides from week 2 if you need help with interpretation.
+
+The chemical parameter variables are: `ph`, `do`, `phosphate`, `nitrogen`, `ec`, `temp`, and `turbidity`.
+
+*Press "Hint" if you need help.*
+```{r chemical-ANOVA, exercise=TRUE}
+
+# Run an ANOVA to determine whether the mean varies by site
+
+chem_anova <- aov(VARIABLE ~ site,
+                  data = chemical_parameters)
+summary(chem_anova)
+
+```
+
+<div id="chemical-ANOVA-hint">
+**Hint:** Check that the variable name is lowercase and spelled correctly! Do not change any other parts of the code. If you make a mistake, press "Start Over".
+</div>
+
+## -- Tukey test
+
+*Remember, we use a Tukey test after an ANOVA to determine* ***which*** *groups are significantly different.*
+
+$\bigstar$ **Task:** For each chemical parameter that significantly varied between sites, run a Tukey test to determine which sites were different.
+
+1. In the code below, replace the word `VARIABLE` with the variable name for the chemical parameter.
+2. Find the *mean* for each site: these are listed under the name of the variable.
+3. Find the letters listed under `groups`. This shows how the sites separate into groups based on their pair-wise p-values. Sites that share the same letter are similar; sites that do not share the same letter are significantly different.
+4. Based on this output, decide which sites are most similar.
+
+The chemical parameter variables are: `ph`, `do`, `phosphate`, `nitrogen`, `ec`, `temp`, and `turbidity`.
+
+```{r chemical-Tukey, exercise=TRUE}
+
+# Run a Tukey test using the output from the ANOVA
+
+chem_anova <- aov(VARIABLE ~ site,
+                  data = chemical_parameters)
+chem_tukey <- HSD.test(chem_anova, "site")
+print(chem_tukey$groups)
+
+```
+
+<div id="chemical-Tukey-hint">
+**Hint:** If you run a Tukey test on a variable that produced an insignificant ANOVA p-value, you will find that all six sites are listed as belonging to the same group: a.
+</div>
+
+## -- Bar graph
+
+*Remember, bar graphs with error bars are a good way to visually represent the mean values of different groups.*
+
+$\bigstar$ **Task:** Visualize the data to determine which sites were affected by point-source pollution.
+
+1. In the code below, replace the word `VARIABLE` with the variable name.
+2. Interpret the bar graph in order to determine how sites were affected by the sewage treatment plant.
+
+The chemical parameter variables are: `ph`, `do`, `phosphate`, `nitrogen`, `ec`, `temp`, and `turbidity`.
+
+```{r chemical-plot, exercise=TRUE, fig.width=5, fig.height=3}
+
+# Create a summary table for plotting:
+chemical_summary <- chemical_parameters %>% 
+  group_by(site) %>% 
+  summarise(
+    mean = mean(VARIABLE),
+    sd = sd(VARIABLE)
+  )
+
+# Create a graph using the summary table:
+ggplot(chemical_summary, aes(x = site, y = mean)) +
+  geom_col() + 
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd),
+                width = 0.2, position = position_dodge(.9)) +
+  scale_y_continuous(expand = c(0,0)) +
+  theme_classic() +
+  labs(title = "Mean Value of Specified Chemical Parameter",
+       x = "Site", y = "Chemical Parameter")
+       
+```
+
+<div id="chemical-plot-hint">
+**Hint:** You need to replace `VARIABLE` in the code **twice**.
+</div>
+
+## Physical Assessment
+
+The research team measured the ten physical parameters listed in the **Rapid Bioassessment Protocol.**
+
+The first seven parameters were measured for the stream as a whole:
+
+| Variable Name | Physical Parameter |
+| :- | :- |
+| `substrate` | **1.** Epifaunal Substrate / Available Cover |
+| `embed` | **2.** Embeddedness |
+| `regime` | **3.** Velocity/Depth Regimes |
+| `sediment` | **4.** Sediment Deposition |
+| `flow` | **5.** Channel Flow Status |
+| `channel` | **6.** Channel Alteration |
+| `riffles` | **7.** Frequency of Riffles |
+
+```{r physical-data, echo=FALSE}
+physical_parameters[1:8]
+```
+
+<br>
+
+The remaining three parameters were measured twice each--once for each side of the stream:
+
+| Variable Name | Physical Parameter |
+| :- | :- |
+| `bank_left` | **8a.** Bank Stability (left bank) |
+| `bank_right` | **8b.** Bank Stability (right bank) |
+| `veg_left` | **9a.** Vegetative Protection (left bank) |
+| `veg_right` | **9b.** Vegetative Protection (right bank) |
+| `riparian_left` | **10a.** Riparian Vegetative Zone Width (left bank) |
+| `riparian_right` | **10b.** Riparian Vegetative Zone Width (right bank) |
+
+```{r physical-data-banks, echo=FALSE}
+physical_parameters[c(1,9:14)]
+```
+
+<br>
+
+Finally, the physical parameter values for each of the ten variables were summed into a cumulative habitat score:
+
+| Variable Name | Physical Parameter |
+| :- | :- |
+| `score` | *Physical Habitat Quality Score* (sum of physical parameter scores) |
+
+```{r physical-data-score, echo=FALSE}
+physical_parameters[c(1,15)]
+```
+
+## -- ANOVA
+
+$\bigstar$ **Task:** For each of the physical parameters, run an ANOVA to determine whether the mean varies by site.
+
+The physical parameter variables are: `substrate`, `embed`, `regime`, `sediment`, `flow`, `channel`, `riffles`, `bank_left`, `bank_right`, `veg_left`, `veg_right`, `riparian_left`, `riparian_right`, and `score`.
+
+```{r physical-ANOVA, exercise=TRUE}
+
+# Run an ANOVA to determine whether the mean varies by site
+
+phys_anova <- aov(VARIABLE ~ site,
+                  data = physical_parameters)
+summary(phys_anova)
+
+```
+
+<div id="physical-ANOVA-hint">
+**Hint:** Replace the word `VARIABLE` with the variable name for a physical parameter. Press "Run Code". Find the ANOVA p-value labeled `Pr(>F)`.
+</div>
+
+## -- Tukey test
+
+$\bigstar$ **Task:** For each physical parameter that significantly varied between sites, run a Tukey test to determine which sites were different.
+
+The physical parameter variables are: `substrate`, `embed`, `regime`, `sediment`, `flow`, `channel`, `riffles`, `bank_left`, `bank_right`, `veg_left`, `veg_right`, `riparian_left`, `riparian_right`, and `score`.
+
+```{r physical-Tukey, exercise=TRUE}
+
+# Run a Tukey test using the output from the ANOVA
+
+phys_anova <- aov(VARIABLE ~ site,
+                  data = physical_parameters)
+phys_tukey <- HSD.test(phys_anova, "site")
+print(phys_tukey$groups)
+
+```
+
+<div id="physical-Tukey-hint">
+**Hint:** Replace the word `VARIABLE` with the variable name for a physical parameter. Find the mean values of the parameter for each site listed under the name of the variable. Find groupings of similar sites listed by letter under `groups`.
+</div>
+
+## -- Bar graph
+
+$\bigstar$ **Task:** Visualize the data to determine which sites were affected by the channelization and which side of the stream was affected by the access road.
+
+The physical parameter variables are: `substrate`, `embed`, `regime`, `sediment`, `flow`, `channel`, `riffles`, `bank_left`, `bank_right`, `veg_left`, `veg_right`, `riparian_left`, `riparian_right`, and `score`.
+
+```{r physical-plot, exercise=TRUE, fig.width=5, fig.height=3}
+
+# Create a summary table for plotting:
+physical_summary <- physical_parameters %>% 
+  group_by(site) %>% 
+  summarise(
+    mean = mean(VARIABLE),
+    sd = sd(VARIABLE)
+  )
+
+# Create a graph using the summary table:
+ggplot(physical_summary, aes(x = site, y = mean)) +
+  geom_col() + 
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd),
+                width = 0.2, position = position_dodge(.9)) +
+  scale_y_continuous(expand = c(0,0)) +
+  theme_classic() +
+  labs(title = "Mean Value of Specified Physical Parameter",
+       x = "Site", y = "Physical Parameter")
+       
+```
+
+<div id="physical-plot-hint">
+**Hint:** You need to replace `VARIABLE` in the code **twice**.
+</div>
+
+## Sources
+
+**Congratulations, you've reached the end of this tutorial!** Wash your hands and get yourself a snack. (:
+
+Chemical and physical parameter data modified from dataset courtesy of Thomas Even.
+
+Tutorial by Kate Culhane (kathrynculhane@ucsb.edu).

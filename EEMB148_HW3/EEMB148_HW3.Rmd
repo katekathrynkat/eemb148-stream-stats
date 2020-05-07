@@ -1,0 +1,370 @@
+---
+title: "EEMB 148 - HW 3" 
+subtitle: "Macroinvertebrate and Fish Assessment"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+    theme: sandstone
+runtime: shiny_prerendered
+description: "Macroinvertebrate and fish analyses for HW 3."
+---
+
+```{r setup, include=FALSE}
+# Necessary packages:
+
+library(learnr)
+library(tidyverse) 
+library(agricolae)
+
+# Necessary data:
+
+inverts <- read_csv('macroinvertebrates.csv') %>% 
+  mutate(IBI = round((coleoptera_score+ept_score+predator_score+
+                        collector_score+intolerant_score+
+                        noninsect_score+tolerant_score)/0.7, 1)) %>%
+  mutate(site = fct_reorder(site, location, .desc = TRUE),
+         location = factor(location, levels = c('upstream', 'downstream')))
+
+fish_abundance <- read_csv('fish_abundance.csv') %>% 
+  mutate(site = fct_reorder(site, location, .desc = TRUE), 
+         location = factor(location, levels = c('upstream', 'downstream')))
+
+fish_condition <- read_csv('fish_condition.csv') %>% 
+  mutate(K = weight / (length^3) * 1000) %>% 
+  mutate(site = factor(site, levels = c('lizard','snake','turtle',
+                                        'frog','newt','salamander')), 
+         location = factor(location, levels = c('upstream', 'downstream')))
+
+# Tutorial options:
+
+tutorial_options(exercise.timelimit = 10)
+
+```
+
+<style type="text/css">
+.table {
+
+    width: 500px;
+
+}
+</style>
+
+## Study System
+
+### San Gabriel River
+
+The San Gabriel River flows through southern California, and is dammed in several places. The dams provide hydroelectric power, drinking water, and regulated stream flow for the Los Angeles area.
+
+This study surveyed a stretch of the San Gabriel River near the **San Gabriel dam**, a rock-fill dam with several associated habitat alterations:
+
+- Water is released **from the top of the dam** to maintain flow and power a hydroelectric plant.
+- Native **riparian vegetation is removed** along 500 m of the river bank below dam.
+- There is **substantial erosion of fine substrates** (sand and mud) into the stream below the dam.
+
+<br>
+
+### Study Design
+
+A research team surveyed sites above and below the San Gabriel dam and its associated reservoir in order to quantify changes in the macroinvertebrate and fish communities. They chose **three upstream sites** within a 300-m stretch, and **three downstream sites** within a 300-m stretch. Each site was named after a type of herp that can be found in riparian habitats. "Herp" is ecological slang for reptiles and amphibians (from the word "herpetology"...no relation to STIs).
+
+- The three sites *upstream* from the dam were named after reptiles: lizard, snake, and turtle. 
+- The three sites *downstream* from the dam were named after amphibians: frog, newt, and salamander.
+
+At each of the six sites, the research team sampled invertebrate and fish communities. **Five replicates (measurements)** were taken for each metric at each site. Therefore, each metric has $6*5=30$ total measurements.
+
+**Experimental Design:**
+
+- *Predictor Variable:* location (upstream or downstream of the dam) 
+- *Response Variables:* invertebrate community; SoCal B-IBI; fish abundance; fish body condition (K)
+
+<br>
+
+### **Task:** Calculations and Statistics
+
+Your goals are to calculate key parameters and draw statistical conclusions.
+
+Note: All error bars represent *standard error* instead of *standard deviation*. Standard error is related to standard deviation, but takes into account sample size:
+
+$SE=\displaystyle \frac{\sigma}{\sqrt{n}}$
+
+Where $\sigma$ is the standard deviation and $n$ is the sample size. Like standard deviation, standard error represents the variance, or spread of the data.
+
+***Graded Assignment:*** *Homework #3 is formatted as a "quiz" on Gauchospace.*
+
+## INVERTEBRATE COMMUNITY 
+
+The researchers collected invertebrate samples using the Surber sampler method, which is ideal for sampling benthic macroinvertebrates. Using these samples, the researchers measured **seven metrics** of the invertebrate community, as follows:
+
+| Variable Name | Metric | Units | 
+| :- | :- | :- | 
+|`coleoptera` | Coleoptera taxa | Number of taxa |
+| `ept` | EPT taxa | Number of taxa |
+| `predator` | Predator taxa | Number of taxa |
+| `collector` | % of collector individuals | % of all individuals | 
+| `intolerant` | % of intolerant individuals | % of all individuals |
+| `noninsect` | % of non-insect taxa | % of taxa | 
+|`tolerant` | % of tolerant taxa | % of taxa |
+
+Here are the raw data presented in a table. Use the black triangle in the header to view more columns. Use the green "Next" button to see more rows.
+
+```{r invert-data, echo=FALSE}
+inverts %>%
+  select(-c(site_number, sample, coleoptera_score:IBI))
+```
+
+## -- Calculation: *SoCal B-IBI*
+
+*The **So**uthern **Cal**ifornia **B**enthic Invertebrate **I**ndex of **B**iotic **I**ntegrity* (**SoCal B-IBI**) developed by Ode et al. (2005) is a comprehensive index of stream health that incorporates these seven distinct metrics. To calculate the index, you first need to score each metric on a scale from 0-10.
+
+<br>
+
+$\bigstar$ **Task:** The table below displays the raw data for two inverberate samples. For each sample, score the seven metrics using Table 3 from Ode et al. (2005). You will then use these scores to calculate the SoCal B-IBI. Check the section slides if you need help. *This is question #1 on the homework.*
+
+```{r ibi-data, echo=FALSE}
+inverts %>%
+  filter(sample == 1, site == 'frog' | site == 'lizard') %>% 
+  select(-c(site_number, sample, coleoptera_score:IBI))
+```
+
+## -- Statistics: *SoCal B-IBI*
+
+### t-test
+
+$\bigstar$ **Task:** Interpret the t-test output to determine whether each of the seven invertebrate metrics, as well as the SoCal B-IBI, varied by location.
+
+The variable names for the seven metrics are: `coleoptera`, `ept`, `predator`, `collector`, `intolerant`, `noninsect`, and `tolerant`. The variable name for the SoCal B-IBI is `IBI`.
+
+```{r ibi-ttest, exercise = TRUE}
+
+# Run a t-test to determine whether the mean varied by location
+t.test(VARIABLE ~ location,
+       data = inverts)
+
+```
+
+<div id="ibi-ttest-hint">
+**Hint:** Replace the word `VARIABLE` with one of the variable names. Press "Run Code". Find the t-statistic labeled `t` and the p-value labeled `p-value`.
+</div>
+
+<br>
+
+### Bar graph
+
+$\bigstar$ **Task:** Visualize the data using a bar graph. Error bars show SE (see tutorial introduction for more information).
+
+The variable names for the seven metrics are: `coleoptera`, `ept`, `predator`, `collector`, `intolerant`, `noninsect`, and `tolerant`. The variable name for the SoCal B-IBI is `IBI`.
+
+```{r ibi-plot, exercise=TRUE, fig.width=3, fig.height=3}
+
+# Create a summary table for plotting:
+invert_summary <- inverts %>%
+  group_by(location) %>% 
+  summarise(mean = mean(VARIABLE), 
+            se = sd(VARIABLE)/sqrt(length(VARIABLE)))
+
+# Create a graph using the summary table: 
+ggplot(invert_summary, aes(x = location, y = mean, fill = location)) + 
+  geom_col() + 
+  scale_fill_manual(values = c("cadetblue", "burlywood3")) + 
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se),
+                width = 0.2, position = position_dodge(.9)) + 
+  scale_y_continuous(expand = c(0,0)) + 
+  theme_classic() + 
+  theme(legend.position = "none") + 
+  labs(title = "Mean Metric Value",
+       x = "Site",
+       y = "Invertebrate Metric")
+
+```
+
+<div id="ibi-plot-hint">
+**Hint:** You need to replace `VARIABLE` in the code **three times**.
+</div>
+
+## FISH DENSITY
+
+The **arroyo chub** (*Gila orcuttii*) is found in only a few southern California river systems, and is listed as an IUCN vulnerable species. The arroyo chub is native to the San Gabriel River system.
+
+To sample populations of the arroyo chub, the researchers used 3-pass depletion electroshocking. After capturing all of the fish within a known area of the stream, the fish were counted as a measure of *raw abundance.* Finally, the raw abundance was divided by the *lenth of the stream sampled* in order to calculate the *density of fish.* 
+
+
+| Variable Name | Metric | Units | 
+| :- | :- | :- | 
+| `density` | Fish density | fish / km |
+
+Here are the raw data presented in a table.
+
+```{r abundance-data, echo=FALSE}
+fish_abundance %>% select(-c(site_number)) 
+```
+
+## -- Statistics: Fish density
+
+### t-test
+
+$\bigstar$ **Task:** Interpret the t-test output to determine whether the mean fish density varied by location.
+
+```{r fish-ttest}
+
+# Run a t-test to determine whether the mean fish density varied by location
+t.test(density ~ location,
+       data = fish_abundance)
+
+```
+
+<br>
+
+### Bar graph
+
+$\bigstar$ **Task:** Visualize the data using a bar graph. Error bars show SE (see tutorial introduction for more information).
+
+```{r fish-plot, echo = FALSE, fig.width=3, fig.height=3}
+
+# Create a summary table for plotting:
+abundance_summary <- fish_abundance %>%
+  group_by(location) %>% 
+  summarise(mean = mean(density), 
+            se = sd(density)/sqrt(length(density)))
+
+# Create a graph using the summary table: 
+ggplot(abundance_summary, aes(x = location, y = mean, fill = location)) + 
+  geom_col() + 
+  scale_fill_manual(values = c("cadetblue", "burlywood3")) + 
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se),
+                width = 0.2, position = position_dodge(.9)) + 
+  scale_y_continuous(expand = c(0,0)) + 
+  theme_classic() + 
+  theme(legend.position = "none") + 
+  labs(title = "Mean Density of Arroyo Chub",
+       x = "Site",
+       y = "Fish Density (individuals / km)")
+
+```
+
+## FISH CONDITION
+
+For each arroyo chub captured, the researchers measured weight and length in order to assess fish health.
+
+
+| Variable Name | Metric | Units | 
+| :- | :- | :- | 
+| `weight` | Weight of the fish | kg | 
+| `length` | Length of the fish | cm |
+
+Because fish abundance varied between sites, the sample sizes were not equal. This table shows sample size `n` for each site:
+
+```{r k-summary, echo=FALSE}
+fish_condition %>% 
+  group_by(site) %>% 
+  summarise(n = length(K))
+```
+
+Here are the raw data presented in a table.
+
+```{r k-data, echo=FALSE} 
+fish_condition %>% select(-c(site_number, sample, K))
+```
+
+## -- Calculation: *K*
+
+We can calculate the body condition ($K$) of each fish using the equation $K=W/L^3$ where $W$ is the weight in grams and $L$ is the length in centimeters.
+
+<br>
+
+$\bigstar$ **Task:** Calculate $K$ using R code! Look for the phrase `condition = FORMULA` in the following code, and replace the word "FORMULA" with the correct mathematical expression.  When you click "Run Code", you should see a table with two rows of data, and a new column for the variable `K`. *This is question #6 on the homework.*
+
+- ***Hint 1:*** *You will need to use the variables* `weight` *and* `length`*, as well as the operators* `/`*,* `^`*, and* `*`*.*
+- ***Hint 2:*** *Remember that the units for* $K$ *are* $g/cm^3$*.*
+- ***Hint 3:*** *If you get completely stuck, click "Solution".*
+
+```{r calculate-K-setup}
+fish_condition <- fish_condition %>% 
+  filter(sample == 3,
+         site == 'frog' | site == 'lizard') %>% 
+  select(-c(site_number, sample, K))
+```
+
+```{r calculate-K, exercise=TRUE}
+
+# Calculate body condition (K) using weight and length
+mutate(fish_condition,
+       K = FORMULA)
+
+```
+
+```{r calculate-K-solution}
+
+# Calculate body condition (K) using weight and length
+mutate(fish_condition,
+       K = weight / (length^3) * 1000)
+
+```
+
+## -- Statistics: *K*
+
+### ANOVA
+
+$\bigstar$ **Task:** Interpret the ANOVA output to determine whether the mean fish body condition varied by site.
+
+```{r K-ANOVA}
+
+# Run an ANOVA to determine whether the mean fish body condition varied by site
+K_anova <- aov(K ~ site, 
+                 data = fish_condition)
+summary(K_anova)
+
+```
+
+<br>
+
+### Tukey test
+
+$\bigstar$ **Task:** Interpret the Tukey test output to determine which sites were different.
+
+```{r K-Tukey}
+
+# Run a Tukey test using the output from the ANOVA
+K_anova <- aov(K ~ site,
+               data = fish_condition)
+K_tukey <- HSD.test(K_anova, "site")
+print(K_tukey$groups)
+
+```
+
+<br>
+
+### Bar graph
+
+$\bigstar$ **Task:** Visualize the data using a bar graph. Error bars show SE (see tutorial introduction for more information).
+
+```{r K-plot, echo = FALSE, fig.width=5, fig.height=3}
+
+# Create a summary table for plotting:
+K_summary <- fish_condition %>%
+  group_by(location, site) %>% 
+  summarise(mean = mean(K), 
+            se = sd(K)/sqrt(length(K)))
+
+# Create a graph using the summary table: 
+ggplot(K_summary, aes(x = site, y = mean, fill = location)) + 
+  geom_col() + 
+  scale_fill_manual(values = c("cadetblue", "burlywood3")) + 
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se),
+                width = 0.2, position = position_dodge(.9)) + 
+  scale_y_continuous(expand = c(0,0)) + 
+  theme_classic() + 
+  theme(legend.position = "none") + 
+  labs(title = "Mean Body Condtion of Arroyo Chub",
+       x = "Site",
+       y = "K (g/cm^3)")
+
+```
+
+## Sources
+
+**Congratulations, you've reached the end of this tutorial!** Wash your hands and get yourself a snack. (:
+
+Fish data modified from dataset courtesy of Thomas Even.
+
+Tutorial by Kate Culhane (kathrynculhane@ucsb.edu).
