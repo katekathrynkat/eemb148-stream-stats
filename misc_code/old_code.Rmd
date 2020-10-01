@@ -1,0 +1,224 @@
+---
+title: "old_code"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+inverts <- read_csv('casestudy_inverts.csv') %>% 
+  mutate(coleoptera_score = as.numeric(NA), ept_score = as.numeric(NA), 
+         predator_score = as.numeric(NA), collector_score = as.numeric(NA),
+         intolerant_score = as.numeric(NA), noninsect_score = as.numeric(NA),
+         tolerant_score = as.numeric(NA))
+
+```
+
+
+***Note:*** *To save your work, press "Run Code" (even if you have not finished inputting scores). You will receive an error message (object 'X' not found), but that is okay! Even if you close the window your browser should save your progress locally, unless you clear your browser data.*
+
+
+$\bigstar$ **Task:** For each metric, translate the raw data into a score using Table 3 in Ode et al. (2005). Then, input the score into the table by replacing the corresponding `X` in the code below. When you've replaced every `X`, press "Run Code" to input the data and view a table with the scores.
+
+```{r calculate-ibi, exercise=TRUE}
+
+# Don't delete this line of code
+invert_scores <- inverts
+
+# Coleoptera taxa
+invert_scores$coleoptera_score[1] <- X # Site B1
+invert_scores$coleoptera_score[2] <- X # Site B2
+invert_scores$coleoptera_score[3] <- X # Site B3
+invert_scores$coleoptera_score[4] <- X # Site B4
+invert_scores$coleoptera_score[5] <- X # Site U5
+invert_scores$coleoptera_score[6] <- X # Site U6
+invert_scores$coleoptera_score[7] <- X # Site U7
+invert_scores$coleoptera_score[8] <- X # Site U8
+
+# EPT taxa
+invert_scores$ept_score[1] <- X # Site B1
+invert_scores$ept_score[2] <- X # Site B2
+invert_scores$ept_score[3] <- X # Site B3
+invert_scores$ept_score[4] <- X # Site B4
+invert_scores$ept_score[5] <- X # Site U5
+invert_scores$ept_score[6] <- X # Site U6
+invert_scores$ept_score[7] <- X # Site U7
+invert_scores$ept_score[8] <- X # Site U8
+
+# Predator taxa
+invert_scores$predator_score[1] <- X # Site B1
+invert_scores$predator_score[2] <- X # Site B2
+invert_scores$predator_score[3] <- X # Site B3
+invert_scores$predator_score[4] <- X # Site B4
+invert_scores$predator_score[5] <- X # Site U5
+invert_scores$predator_score[6] <- X # Site U6
+invert_scores$predator_score[7] <- X # Site U7
+invert_scores$predator_score[8] <- X # Site U8
+
+# % Collector individuals
+invert_scores$collector_score[1] <- X # Site B1
+invert_scores$collector_score[2] <- X # Site B2
+invert_scores$collector_score[3] <- X # Site B3
+invert_scores$collector_score[4] <- X # Site B4
+invert_scores$collector_score[5] <- X # Site U5
+invert_scores$collector_score[6] <- X # Site U6
+invert_scores$collector_score[7] <- X # Site U7
+invert_scores$collector_score[8] <- X # Site U8
+
+# % Intolerant individuals
+invert_scores$intolerant_score[1] <- X # Site B1
+invert_scores$intolerant_score[2] <- X # Site B2
+invert_scores$intolerant_score[3] <- X # Site B3
+invert_scores$intolerant_score[4] <- X # Site B4
+invert_scores$intolerant_score[5] <- X # Site U5
+invert_scores$intolerant_score[6] <- X # Site U6
+invert_scores$intolerant_score[7] <- X # Site U7
+invert_scores$intolerant_score[8] <- X # Site U8
+
+# % Noninsect taxa
+invert_scores$noninsect_score[1] <- X # Site B1
+invert_scores$noninsect_score[2] <- X # Site B2
+invert_scores$noninsect_score[3] <- X # Site B3
+invert_scores$noninsect_score[4] <- X # Site B4
+invert_scores$noninsect_score[5] <- X # Site U5
+invert_scores$noninsect_score[6] <- X # Site U6
+invert_scores$noninsect_score[7] <- X # Site U7
+invert_scores$noninsect_score[8] <- X # Site U8
+
+# % Tolerant taxa
+invert_scores$tolerant_score[1] <- X # Site B1
+invert_scores$tolerant_score[2] <- X # Site B2
+invert_scores$tolerant_score[3] <- X # Site B3
+invert_scores$tolerant_score[4] <- X # Site B4
+invert_scores$tolerant_score[5] <- X # Site U5
+invert_scores$tolerant_score[6] <- X # Site U6
+invert_scores$tolerant_score[7] <- X # Site U7
+invert_scores$tolerant_score[8] <- X # Site U8
+
+# IGNORE THE CODE BELOW. DO NOT DELETE.
+invert_scores[,c(1:2,10:16)]
+assign('invert_scores', invert_scores, envir=globalenv())
+
+```
+
+
+
+## -- Calculation: SoCal B-IBI
+
+The SoCal B-IBI incorporates all seven metric scores.
+
+$\bigstar$ **Task:** Calculate the SoCal B-IBI at each site by replacing the word `FORMULA` in the code below. When you click "Run Code", you should see a table displaying the index for each site.
+
+*Click "Hint" for help! If you forget how formulas work in R, re-visit the calculation in* [Homework #3.](https://katekathrynkat.shinyapps.io/eemb148_hw3/#section-calculation-k)
+```{r ibi-calculation, exercise=TRUE}
+
+# Calculate the SoCal B-IBI
+invert_ibi <- mutate(inverts,
+                     IBI = FORMULA)
+
+# IGNORE THE CODE BELOW. DO NOT DELETE.
+invert_ibi[,c(1:2,17)]
+assign('invert_ibi', invert_ibi, envir=globalenv())
+
+```
+
+<div id="ibi-calculation-hint">
+**Hint:** FORMULA will need to include all of the variables for each metric score: `coleoptera`, `ept`, `predator`, `collector`, `intolerant`, `noninsect`, and `tolerant`, as well as the operator `+`. You will also want to use the operator `/` in order to convert your value to a percentage. Don't forget the order of operations (PEMDAS)!
+</div>
+
+## -- Statistics
+
+### t-test
+
+**MAKE SURE YOU HAVE COMPLETED THE SOCAL B-IBI CALCULATION BEFORE RUNNING THE T-TEST.**
+
+$\bigstar$ **Task:** Run a t-test for each invertebrate metric (using the raw data), as well as the SoCal B-IBI.
+
+The variable names for the seven metrics are: `coleoptera_raw`, `ept_raw`, `predator_raw`, `collector_raw`, `intolerant_raw`, `noninsect_raw`, and `tolerant_raw`. The variable name for the SoCal B-IBI is `IBI`.
+
+```{r ibi-ttest, exercise = TRUE}
+
+# Run a t-test to determine whether the mean varied by group
+t.test(VARIABLE ~ group,
+       data = invert_ibi)
+
+```
+
+<div id="ibi-ttest-hint">
+**Hint:** Did you get a weird error? Make sure you ran the calculation in the previous section!
+</div>
+
+
+
+
+
+## FISH DENSITY
+
+The **Santa Ana sucker** (*Catostomus santaanae*) is endemic to the Los Angeles, San Gabriel, and Santa Ana river systems, and is listed as an IUCN endangered species. Big Tujunga Creek is one of the only remaining places where Santa Ana suckers can be found.
+
+```{r sucker, echo=FALSE}
+knitr::include_graphics('images/Catostomus_santaanae.png')
+```
+
+<br>
+
+To sample populations of the arroyo chub, the researchers used 3-pass depletion electroshocking.
+
+| Variable Name | Measurement | Units | 
+| :- | :- | :- | 
+| `reach_length` | Length of the sample reach | meters (m) |
+| `pass_1` | Fish caught during electroshock pass #1 | Number of individuals |
+| `pass_2` | Fish caught during electroshock pass #2 | Number of individuals |
+| `pass_3` | Fish caught during electroshock pass #3 | Number of individuals |
+
+```{r abundance-data, echo=FALSE}
+fish_abundance 
+```
+
+## -- Calculation
+
+Before conducting analyses, these raw abundance values need to be converted to density.
+
+$\bigstar$ **Task:** First, calculate the total abundance (total number of individuals) at each site by replacing the word `FORMULA1` in the code below. Then, calculate the density of fish in ***individuals/km*** by replacing the word `FORMULA2` in the code below. When you click "Run Code", you should see a table appear with your new columns.
+
+*Click "Hint" for help! If you forget how formulas work in R, re-visit the calculation in* [Homework #3.](https://katekathrynkat.shinyapps.io/eemb148_hw3/#section-calculation-k)
+
+```{r calculate-density, exercise=TRUE}
+
+# Calculate fish density from the raw data
+fish_density <- mutate(fish_abundance,
+                       abundance = FORMULA1,
+                       density = FORMULA2)
+
+# IGNORE THE CODE BELOW. DO NOT DELETE.
+fish_density[,c(1:2,7:8)]
+assign('fish_density', fish_density, envir=globalenv())
+
+```
+
+<div id="calculate-density-hint">
+**Hint:** FORMULA1 will need to include the variables `pass_1`, `pass_2`, and `pass_3`, as well as the operator `+`. FORMULA2 will need to include the variable `abundance` (created in the previous line of code), the variable `reach_length`, and the operator `/`. Don't forget to convert the units for `reach_length` from *m* to *km*! To do this, you may want to use the operator `*`.
+</div>
+
+## -- Statistics
+
+### t-test
+
+**MAKE SURE YOU HAVE COMPLETED THE DENSITY CALCULATION BEFORE RUNNING THE T-TEST.**
+
+$\bigstar$ **Task:** Run a t-test on fish density. You don't need to change the code; just press "Run Code."
+
+```{r density-ttest, exercise=TRUE}
+
+# Run a t-test to determine whether the mean fish density varied by group
+t.test(density ~ group,
+       data = fish_density)
+
+```
+
+<div id="density-ttest-hint">
+**Hint:** Did you get a weird error? Make sure you ran the calculation in the previous section!
+</div>

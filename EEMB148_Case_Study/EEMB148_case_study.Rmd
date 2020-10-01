@@ -16,6 +16,7 @@ description: "Bioassessment analyses for the final case study for EEMB 148."
 library(learnr)
 library(tidyverse) 
 library(agricolae)
+library(kableExtra)
 
 # Necessary data:
 
@@ -27,14 +28,14 @@ physical_parameters <- read_csv('casestudy_phys.csv') %>%
 algae <- read_csv('casestudy_algae.csv')
 
 inverts <- read_csv('casestudy_inverts.csv') %>% 
-  mutate(coleoptera_score = as.numeric(NA), ept_score = as.numeric(NA), 
-         predator_score = as.numeric(NA), collector_score = as.numeric(NA),
-         intolerant_score = as.numeric(NA), noninsect_score = as.numeric(NA),
-         tolerant_score = as.numeric(NA))
+  mutate(IBI = (coleoptera+ept+predator+collector+intolerant+noninsect+tolerant)/70)
 
-fish_abundance <- read_csv('casestudy_fish_abundance.csv')
+fish_abundance <- read_csv('casestudy_fish_abundance.csv') %>% 
+  mutate(abundance = pass_1 + pass_2 + pass_3,
+         density = abundance/reach_length*1000)
 
 fish_condition <- read_csv('casestudy_fish_condition.csv')
+
 # Tutorial options:
 
 tutorial_options(exercise.timelimit = 10)
@@ -57,14 +58,29 @@ Big Tujunga Creek is located in northern Los Angeles County, CA . The stream beg
 
 **Experimental Design:**
 
-- *Predictor Variable:* site; group (burned vs. unburned)
-- *Response Variables:* physical parameters, chemical parameters, algae, invertebrates, fish
-
-<br>
+- *Predictor Variable:* site or group (burned vs. unburned)
+- *Response Variables:* physical, chemical, algal, invertebrate, and fish parameters
 
 ### **Task:** Case Study
 
 Your job in this case study is to use your knowledge of stream ecology to identify the burned sites, write a report summarizing the effects of the fire on the river, and  propose a mitigation plan to restore the river. You will examine data on the creek’s physical parameters and water quality, as well as algal, invertebrate, and fish datasets. All data were collected in mid-September 2009, immediately after the fire.
+
+**Resources on Gauchospace:**
+
+- "Case study materials" folder
+  - Case study outline
+  - Grading rubric
+  - Methods information for field and lab methodology
+  - Scientific writing tips
+  - Literature search tools
+- "Case study slides" folder
+  - Powerpoint slides from section with background information
+- "Case study literature" folder
+  - Ten useful papers you may want to cite in your report
+- "Case study data" folder
+  - Raw data files in CSV format
+
+***Note:*** *Even if you close the window for this tutorial, your browser should save your progress locally...unless you clear your browser data.*
 
 ## CHEMICAL PARAMETERS
 
@@ -128,6 +144,10 @@ ggplot(chemical_summary, aes(x = group, y = mean, fill = group)) +
 
 ```
 
+<div id="chemical-plot-hint">
+**Hint:** If you want to change the title of the graph and the y-axis label to match the parameter that you are testing, try updating the text in quotes at the end of the code chunk!
+</div>
+
 ## PHYSICAL PARAMETERS
 
 The research team measured the ten physical parameters listed in the **Rapid Bioassessment Protocol.** Three parameters were measured twice each: once for each side of the stream. Ultimately, the physical parameter values for each of the ten variables were summed into a cumulative Physical Habitat Quality Score.
@@ -159,7 +179,7 @@ physical_parameters
 
 $\bigstar$ **Task:** Run an ANOVA for each physical parameter, as well as for the Physical Habitat Quality Score.
 
-The physical parameter variables are: `substrate`, `embed`, `regime`, `sediment`, `flow`, `channel`, `riffles`, `bank_left`, `bank_right`, `veg_left`, `veg_right`, `riparian_left`, `riparian_right`, and `score`.
+The physical parameter variables are: `substrate`, `embed`, `regime`, `sediment`, `flow`, `channel`, `riffles`, `bank_left`, `bank_right`, `veg_left`, `veg_right`, `riparian_left`, and `riparian_right`. The variable name for the Physical Habitat Quality Score is `score`.
 
 ```{r physical-ANOVA, exercise=TRUE}
 
@@ -171,11 +191,13 @@ summary(phys_anova)
 
 ```
 
-### Tukey test
+<br>
+
+#### Post-hoc Tukey test
 
 $\bigstar$ **Task:** Run a Tukey test for each physical parameter that significantly varied between sites.
 
-The physical parameter variables are: `substrate`, `embed`, `regime`, `sediment`, `flow`, `channel`, `riffles`, `bank_left`, `bank_right`, `veg_left`, `veg_right`, `riparian_left`, `riparian_right`, and `score`.
+The physical parameter variables are: `substrate`, `embed`, `regime`, `sediment`, `flow`, `channel`, `riffles`, `bank_left`, `bank_right`, `veg_left`, `veg_right`, `riparian_left`, and `riparian_right`. The variable name for the Physical Habitat Quality Score is `score`.
 
 ```{r physical-Tukey, exercise=TRUE}
 
@@ -192,10 +214,11 @@ print(phys_tukey$groups)
 
 $\bigstar$ **Task:** Visualize the data using a bar chart. Error bars represent standard error.
 
+- Please update the graph before adding it to your case study report!
 - Change the bar fill color by adjusting the code in the indicated line. Check out [this webpage](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf) to see all of the color options offered.
 - Change the titles for the graph and axes by replacing the text in the appropriate lines.
 
-The physical parameter variables are: `substrate`, `embed`, `regime`, `sediment`, `flow`, `channel`, `riffles`, `bank_left`, `bank_right`, `veg_left`, `veg_right`, `riparian_left`, `riparian_right`, and `score`.
+The physical parameter variables are: `substrate`, `embed`, `regime`, `sediment`, `flow`, `channel`, `riffles`, `bank_left`, `bank_right`, `veg_left`, `veg_right`, `riparian_left`, and `riparian_right`. The variable name for the Physical Habitat Quality Score is `score`.
 
 ```{r physical-plot, exercise=TRUE, fig.width=5, fig.height=3}
 
@@ -254,7 +277,9 @@ summary(algae_anova)
 
 ```
 
-### Tukey test
+<br>
+
+#### Post-hoc Tukey test
 
 $\bigstar$ **Task:** Run a Tukey test for both AFDM and Chl-*a*.
 
@@ -305,177 +330,81 @@ ggplot(algae_summary, aes(x = site, y = mean, fill = group)) +
 
 The researchers sampled invertebrate communities using a kick-net, which collects benthic macroinvertebrates. 
 
-```{r kicknet, echo=FALSE}
+```{r kicknet, echo=FALSE, out.height="50%", out.width="50%"}
 knitr::include_graphics('images/kicknet.png')
 ```
 
+<br>
 
-## -- Calculation
-
-The researchers measured the **seven metrics** for the SoCal B-IBI.
+The researchers measured the **seven metrics** for the SoCal B-IBI. These variables have the suffix "_raw" because they represent the raw data.
 
 | Variable Name | Metric | Units | 
 | :- | :- | :- | 
-|`coleoptera` | Coleoptera taxa | Number of taxa |
-| `ept` | EPT taxa | Number of taxa |
-| `predator` | Predator taxa | Number of taxa |
-| `collector` | % of collector individuals | % of all individuals | 
-| `intolerant` | % of intolerant individuals | % of all individuals |
-| `noninsect` | % of non-insect taxa | % of taxa | 
-|`tolerant` | % of tolerant taxa | % of taxa |
+|`coleoptera_raw` | Coleoptera taxa | Number of taxa |
+| `ept_raw` | EPT taxa | Number of taxa |
+| `predator_raw` | Predator taxa | Number of taxa |
+| `collector_raw` | % of collector individuals | % of all individuals | 
+| `intolerant_raw` | % of intolerant individuals | % of all individuals |
+| `noninsect_raw` | % of non-insect taxa | % of taxa | 
+| `tolerant_raw` | % of tolerant taxa | % of taxa |
+
+```{r raw-invert-data, echo=FALSE}
+inverts %>% 
+  select(-c(coleoptera:tolerant))
+```
+
+<br>
+
+Before conducting analyses, the raw data were converted to metric scores, using Table 3 in Ode et al. (2005). These scores can then be used to calculate the SoCal B-IBI.
+
+| Variable Name | Metric Score | Units | 
+| :- | :- | :- | 
+|`coleoptera` | Score for Coleoptera taxa | Scale (0-10) |
+| `ept` | Score for EPT taxa | Scale (0-10) |
+| `predator` | Score for Predator taxa | Scale (0-10) |
+| `collector` | Score for % of collector individuals | Scale (0-10) | 
+| `intolerant` | Score for % of intolerant individuals | Scale (0-10) |
+| `noninsect` | Score for % of non-insect taxa | Scale (0-10) | 
+|`tolerant` | Score for % of tolerant taxa | Scale (0-10) |
+|`IBI` | SoCal B-IBI | % |
 
 ```{r invert-data, echo=FALSE}
 inverts %>% 
-  select(-c(coleoptera_score:tolerant_score))
+  select(-c(coleoptera_raw:tolerant_raw))
 ```
-
-### Score the 7 metrics
-
-Before conducting analyses, these raw data need to be converted to metric scores.
-
-$\bigstar$ **Task:** For each metric, translate the raw data into a score using Table 3 in Ode et al. (2005). Then, input the score into the table by replacing the corresponding `X` in the code below. When you've replaced every `X`, press "Run Code" to input the data and view a table with the scores.
-
-```{r calculate-ibi, exercise=TRUE}
-
-# Don't delete this line of code
-invert_scores <- inverts
-
-# Coleoptera taxa
-invert_scores$coleoptera_score[1] <- X # Site B1
-invert_scores$coleoptera_score[2] <- X # Site B2
-invert_scores$coleoptera_score[3] <- X # Site B3
-invert_scores$coleoptera_score[4] <- X # Site B4
-invert_scores$coleoptera_score[5] <- X # Site U5
-invert_scores$coleoptera_score[6] <- X # Site U6
-invert_scores$coleoptera_score[7] <- X # Site U7
-invert_scores$coleoptera_score[8] <- X # Site U8
-
-# EPT taxa
-invert_scores$ept_score[1] <- X # Site B1
-invert_scores$ept_score[2] <- X # Site B2
-invert_scores$ept_score[3] <- X # Site B3
-invert_scores$ept_score[4] <- X # Site B4
-invert_scores$ept_score[5] <- X # Site U5
-invert_scores$ept_score[6] <- X # Site U6
-invert_scores$ept_score[7] <- X # Site U7
-invert_scores$ept_score[8] <- X # Site U8
-
-# Predator taxa
-invert_scores$predator_score[1] <- X # Site B1
-invert_scores$predator_score[2] <- X # Site B2
-invert_scores$predator_score[3] <- X # Site B3
-invert_scores$predator_score[4] <- X # Site B4
-invert_scores$predator_score[5] <- X # Site U5
-invert_scores$predator_score[6] <- X # Site U6
-invert_scores$predator_score[7] <- X # Site U7
-invert_scores$predator_score[8] <- X # Site U8
-
-# % Collector individuals
-invert_scores$collector_score[1] <- X # Site B1
-invert_scores$collector_score[2] <- X # Site B2
-invert_scores$collector_score[3] <- X # Site B3
-invert_scores$collector_score[4] <- X # Site B4
-invert_scores$collector_score[5] <- X # Site U5
-invert_scores$collector_score[6] <- X # Site U6
-invert_scores$collector_score[7] <- X # Site U7
-invert_scores$collector_score[8] <- X # Site U8
-
-# % Intolerant individuals
-invert_scores$intolerant_score[1] <- X # Site B1
-invert_scores$intolerant_score[2] <- X # Site B2
-invert_scores$intolerant_score[3] <- X # Site B3
-invert_scores$intolerant_score[4] <- X # Site B4
-invert_scores$intolerant_score[5] <- X # Site U5
-invert_scores$intolerant_score[6] <- X # Site U6
-invert_scores$intolerant_score[7] <- X # Site U7
-invert_scores$intolerant_score[8] <- X # Site U8
-
-# % Noninsect taxa
-invert_scores$noninsect_score[1] <- X # Site B1
-invert_scores$noninsect_score[2] <- X # Site B2
-invert_scores$noninsect_score[3] <- X # Site B3
-invert_scores$noninsect_score[4] <- X # Site B4
-invert_scores$noninsect_score[5] <- X # Site U5
-invert_scores$noninsect_score[6] <- X # Site U6
-invert_scores$noninsect_score[7] <- X # Site U7
-invert_scores$noninsect_score[8] <- X # Site U8
-
-# % Tolerant taxa
-invert_scores$tolerant_score[1] <- X # Site B1
-invert_scores$tolerant_score[2] <- X # Site B2
-invert_scores$tolerant_score[3] <- X # Site B3
-invert_scores$tolerant_score[4] <- X # Site B4
-invert_scores$tolerant_score[5] <- X # Site U5
-invert_scores$tolerant_score[6] <- X # Site U6
-invert_scores$tolerant_score[7] <- X # Site U7
-invert_scores$tolerant_score[8] <- X # Site U8
-
-# IGNORE THE CODE BELOW. DO NOT DELETE.
-invert_scores[,c(1:2,10:16)]
-assign('invert_scores', invert_scores, envir=globalenv())
-
-```
-
-***Note:*** *To save your work, press "Run Code" (even if you have not finished inputting scores). You will receive an error message (object 'X' not found), but that is okay! Even if you close the window your browser should save your progress locally, unless you clear your browser data.*
-
-### Calculate the SoCal B-IBI
-
-The SoCal B-IB inIcorporates all seven metric scores.
-
-$\bigstar$ **Task:** Calculate the SoCal B-IBI at each site by replacing the word `FORMULA` in the code below. When you click "Run Code", you should see a table displaying the index for each site.
-
-```{r ibi-calculation, exercise=TRUE}
-
-# Calculate the SoCal B-IBI
-
-invert_ibi <- mutate(invert_scores,
-                      IBI = FORMULA)
-
-# IGNORE THE CODE BELOW. DO NOT DELETE.
-invert_ibi[,c(1:2,17)]
-assign('invert_ibi', invert_ibi, envir=globalenv())
-
-```
-
-<div id="ibi-calculation-hint">
-**Hint:** FORMULA will need to include the variables for each metric score: `coleoptera_score`, `ept_score`, `predator_score`, `collector_score`, `intolerant_score`, `noninsect_score`, and `tolerant_score`, as well as the operator `+`. You will also want to use the operator `/` in order to convert your value to a percentage. Don't forget the order of operations (PEMDAS)!
-</div>
 
 ## -- Statistics
 
 ### t-test
 
-**MAKE SURE YOU HAVE COMPLETED THE SOCAL B-IBI CALCULATION BEFORE RUNNING THE T-TEST.**
+$\bigstar$ **Task:** Run a t-test for each invertebrate metric (using the raw data), as well as the SoCal B-IBI.
 
-$\bigstar$ **Task:** Run a t-test for each invertebrate metric, as well as the SoCal B-IBI.
-
-The variable names for the seven metrics are: `coleoptera`, `ept`, `predator`, `collector`, `intolerant`, `noninsect`, and `tolerant`. The variable name for the SoCal B-IBI is `IBI`.
+The variable names for the seven metrics are: `coleoptera_raw`, `ept_raw`, `predator_raw`, `collector_raw`, `intolerant_raw`, `noninsect_raw`, and `tolerant_raw`. The variable name for the SoCal B-IBI is `IBI`.
 
 ```{r ibi-ttest, exercise = TRUE}
 
 # Run a t-test to determine whether the mean varied by group
 t.test(VARIABLE ~ group,
-       data = invert_ibi)
+       data = inverts)
 
 ```
-
-<br>
 
 ## -- Graph
 
 **MAKE SURE YOU HAVE COMPLETED THE SOCAL B-IBI CALCULATION BEFORE CREATING A BAR CHART.**
 
-$\bigstar$ **Task:** Visualize the data using a bar chart. Error bars represent standard error.
+$\bigstar$ **Task:** Visualize the raw data, as well as the SoCal B-IBI, using a bar chart. Error bars represent standard error.
 
-The variable names for the seven metrics are: `coleoptera`, `ept`, `predator`, `collector`, `intolerant`, `noninsect`, and `tolerant`. The variable name for the SoCal B-IBI is `IBI`.
+The variable names for the seven metrics are: `coleoptera_raw`, `ept_raw`, `predator_raw`, `collector_raw`, `intolerant_raw`, `noninsect_raw`, and `tolerant_raw`. The variable name for the SoCal B-IBI is `IBI`.
 
+- Please update the graph of SoCal B-IBI before adding it to your case study report!
 - Change the bar fill color by adjusting the code in the indicated line. Check out [this webpage](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf) to see all of the color options offered.
 - Change the titles for the graph and axes by replacing the text in the appropriate lines.
 
 ```{r ibi-plot, exercise=TRUE, fig.width=3, fig.height=3}
 
 # Create a summary table for plotting:
-invert_summary <- invert_ibi %>% 
+invert_summary <- inverts %>% 
   group_by(group) %>% 
   summarise(mean = mean(VARIABLE), 
             se = sd(VARIABLE)/sqrt(length(VARIABLE)))
@@ -495,7 +424,7 @@ ggplot(invert_summary, aes(x = group, y = mean, fill = group)) +
 
 ```
 
-## FISH
+## FISH DENSITY
 
 The **Santa Ana sucker** (*Catostomus santaanae*) is endemic to the Los Angeles, San Gabriel, and Santa Ana river systems, and is listed as an IUCN endangered species. Big Tujunga Creek is one of the only remaining places where Santa Ana suckers can be found.
 
@@ -503,9 +432,9 @@ The **Santa Ana sucker** (*Catostomus santaanae*) is endemic to the Los Angeles,
 knitr::include_graphics('images/Catostomus_santaanae.png')
 ```
 
-## -- Calculation: density
+<br>
 
-To sample populations of the arroyo chub, the researchers used 3-pass depletion electroshocking.
+To sample populations of the Santa Ana sucker, the researchers used 3-pass depletion electroshocking. Here are their raw data:
 
 | Variable Name | Measurement | Units | 
 | :- | :- | :- | 
@@ -515,58 +444,45 @@ To sample populations of the arroyo chub, the researchers used 3-pass depletion 
 | `pass_3` | Fish caught during electroshock pass #3 | Number of individuals |
 
 ```{r abundance-data, echo=FALSE}
-fish_abundance 
-```
-
-Before conducting analyses, these raw abundance values need to be converted to density.
-
-$\bigstar$ **Task:** First, calculate the *total abundance* (total number of individuals) at each site by replacing the word `FORMULA1` in the code below. Then, calculate the *density* of fish in *individuals/km* by replacing the word `FORMULA2` in the code below. When you click "Run Code", you should see a table appear with your new columns added.
-
-```{r calculate-density, exercise=TRUE}
-
-# Calculate fish density from the raw data
-fish_density <- mutate(fish_abundance,
-                       abundance = FORMULA1,
-                       density = FORMULA2)
-
-# IGNORE THE CODE BELOW. DO NOT DELETE.
-print(fish_density)
-assign('fish_density', fish_density, envir=globalenv())
-
-```
-
-<div id="calculate-density-hint">
-**Hint:** FORMULA1 will need to include the variables `pass_1`, `pass_2`, and `pass_3`, as well as the operator `+`. FORMULA2 will need to include the variable `abundance` (created in the previous line of code), the variable `reach_length`, and the operator `/`. Don't forget to convert the units for `reach_length` from *m* to *km*! You may want to use the operator `*`.
-</div>
-
-## -- Statistics: density
-
-### t-test
-
-**MAKE SURE YOU HAVE COMPLETED THE DENSITY CALCULATION BEFORE RUNNING THE T-TEST.**
-
-$\bigstar$ **Task:** Run a t-test on fish density.
-
-```{r density-ttest, exercise=TRUE}
-
-# Run a t-test to determine whether the mean fish density varied by group
-t.test(density ~ group,
-       data = fish_density)
-
+fish_abundance[,-c(7:8)]
 ```
 
 <br>
 
-## -- Graph: density
+Before conducting analyses, these raw values were converted to a total abundance, and then density of fish in the stream.
 
-**MAKE SURE YOU HAVE COMPLETED THE DENSITY CALCULATION BEFORE CREATING THE BAR CHART.**
+| Variable Name | Measurement | Units | 
+| :- | :- | :- | 
+| `abundance` | Total fish abundance | Number of individuals |
+| `density` | Fish density | Individuals/ km |
 
-$\bigstar$ **Task:** Visualize the data using a bar chart. Error bars show standard error.
+```{r density-data, echo=FALSE}
+fish_abundance[,-c(3:6)]
+```
 
-```{r fish-plot, exercise = TRUE, fig.width=3, fig.height=3}
+## -- Statistics
+
+### t-test
+
+$\bigstar$ **Task:** Interpret the t-test for fish density.
+
+```{r density-ttest}
+
+# Run a t-test to determine whether the mean fish density varied by group
+t.test(density ~ group,
+       data = fish_abundance)
+
+```
+
+
+## -- Graph
+
+$\bigstar$ **Task:** Interpret the data using a bar chart. Error bars represent standard error.
+
+```{r fish-plot, echo=FALSE, fig.width=3, fig.height=3}
 
 # Create a summary table for plotting:
-density_summary <- fish_density %>%
+density_summary <- fish_abundance %>%
   group_by(group) %>%
   summarise(mean = mean(density),
             se = sd(density)/sqrt(length(density)))
@@ -586,7 +502,7 @@ ggplot(density_summary, aes(x = group, y = mean, fill = group)) +
 
 ```
 
-## -- Calculation: *K*
+## FISH CONDITION
 
 The researchers measured the weight and length of every Santa Ana sucker captured, and then calculated Fulton's K factor to assess fish health.
 
@@ -594,13 +510,21 @@ The researchers measured the weight and length of every Santa Ana sucker capture
 | :- | :- | :- | 
 | `K` | Fulton's K Factor (fish body condition) | g/cm^3 | 
 
-Because fish abundance varied between sites, the sample sizes were not equal. This table shows sample size `n` for each site:
+Because fish abundance varied between sites, the sample sizes were not equal. This table shows the sample size for each site:
 
 ```{r k-summary, echo=FALSE}
-fish_condition %>%
+fish_summary <- fish_condition %>%
   group_by(site, group) %>%
   summarise(n = length(K))
+cols <- c('Site','Group','Sample Size (n)')
+kable(fish_summary, col.names = cols) %>% 
+  kable_styling(bootstrap_options = c('striped', 'condensed'),
+                full_width = FALSE,
+                position = 'left') %>% 
+  column_spec(1, width = '2cm')
 ```
+
+<br>
 
 Here are the raw data presented in a table.
 
@@ -608,13 +532,11 @@ Here are the raw data presented in a table.
 fish_condition
 ```
 
-<br>
-
-## -- Statistics: *K*
+## -- Statistics
 
 ### ANOVA
 
-$\bigstar$ **Task:** Run an ANOVA on fish body condition (K).
+$\bigstar$ **Task:** Interpret the ANOVA for fish body condition (K).
 
 ```{r K-ANOVA}
 
@@ -627,9 +549,9 @@ summary(K_anova)
 
 <br>
 
-### Tukey test
+#### Post-hoc Tukey test
 
-$\bigstar$ **Task:** Run a Tukey test on fish body condition (K).
+$\bigstar$ **Task:** Interpret the Tukey test for fish body condition (K).
 
 ```{r K-Tukey}
 
@@ -641,13 +563,11 @@ print(K_tukey$groups)
 
 ```
 
-<br>
+## -- Graph
 
-## -- Graph: *K*
+$\bigstar$ **Task:** Interpret the data using a bar chart. Error bars represent standard error.
 
-$\bigstar$ **Task:** Visualize the data using a bar chart. Error bars represent standard error.
-
-```{r K-plot, exercise = TRUE, fig.width=5, fig.height=3}
+```{r K-plot, echo=FALSE, fig.width=5, fig.height=3}
 
 # Create a summary table for plotting:
 K_summary <- fish_condition %>%
