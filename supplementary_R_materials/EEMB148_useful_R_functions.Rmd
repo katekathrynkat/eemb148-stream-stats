@@ -1,21 +1,25 @@
 ---
 title: "Useful R Packages and Functions"
-subtitle: For EEMB 148 assignments
-theme: sandstone
-output: pdf_document
+subtitle: "For EEMB 148 assignments"
+output: 
+  html_document:
+    toc: true
+    theme: "flatly"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo=TRUE, eval=FALSE)
 ```
 
-<br>
+*To view online in HTML format (easier to read on a screen), click* ***[here.](https://rpubs.com/katekathrynkat/eemb148_useful_r_functions)***
 
-This document contains useful starter code for who would like to code their own analyses. The necessary data for the homework assignments is provided in CSV format on Gauchospace. Feel free to bring coding questions to office hours!
+This document contains useful starter code for students who want to code their own analyses in EEMB 148. All necessary data for EEMB 148 assignments are provided in CSV format on Gauchospace. Feel free to bring coding questions to office hours!
 
 <br>
 
 ## Summary
+
+<br>
 
 These packages and functions will be necessary for creating the required statistical output:
 
@@ -23,6 +27,8 @@ These packages and functions will be necessary for creating the required statist
   - `t.test`, `aov`, `summary`, `TukeyHSD`
 - In package **`agricolae`**
   - `HSD.test`
+
+<br>
 
 These packages and functions within the **`tidyverse`** will be incredibly helpful:
 
@@ -35,6 +41,8 @@ These packages and functions within the **`tidyverse`** will be incredibly helpf
 - In package **`magrittr`**
   - ` %>% `
 
+<br>
+
 This document is written using the following generic conventions. In your code, you should replace these words with the appropriate object:
 
 - `DATAFRAME` = the data frame from the imported CSV
@@ -45,7 +53,9 @@ This document is written using the following generic conventions. In your code, 
 
 <br>
 
-## Necessary statistical code
+## Statistical analyses for EEMB 148
+
+<br>
 
 ### t-test
 
@@ -62,6 +72,8 @@ t.test(RESPONSE ~ PREDICTOR,
 
 ```
 
+<br>
+
 ### ANOVA
 
 Functions for running ANOVA are also included in the `stats` package. In order to view the results, you need to first create an ANOVA object using the `aov` function, then print the results using the `summary` function.
@@ -77,6 +89,7 @@ summary(anova_output)
 
 ```
 
+<br>
 
 ### Tukey test
 
@@ -102,9 +115,7 @@ TukeyHSD(anova_output, "PREDICTOR")
 
 ## Useful `tidyverse` code
 
-If you're not already using `tidyverse`, I would highly recommend it! `tidyverse` is a collection of intuitive and convenient packages that all deal with data wrangling and visualization. You can install/load the entire collection in one go, or just install/load each package individually. For this class, I especially recommend `readr` (for importing data),  `dplyr` (for wrangling data), and `ggplot2` (for visualizing data). The pipe function from `magrittr` is also great for keeping your code nice and organized.
-
-<br>
+If you're not already using the tidyverse, I would highly recommend it! **The tidyverse is a collection of several intuitive and convenient packages that help with data wrangling and visualization.** It is easiest to load the entire tidyverse collection with a single `library` command, but it is also possible to load each package individually. For this class, I especially recommend these packages within the tidyverse: `readr` (for importing data),  `dplyr` (for wrangling data), and `ggplot2` (for visualizing data). The pipe function from `magrittr` is also great for keeping your code nice and organized.
 
 ```{r}
 
@@ -113,9 +124,11 @@ library(tidyverse)
 
 ```
 
+<br>
+
 ### Import data with `readr`
 
-You can either use the tidyverse function `read_csv` or the base R function `read.csv` to import data. `read_csv` is superior in several ways because its defaults are less likely to create mistakes during import. If you are working in an R project (which I highly recommend), then the filepath is just the name of the CSV. Check out a cheatsheet for `readr` [here.](https://rawgit.com/rstudio/cheatsheets/master/data-import.pdf)
+You can either use the tidyverse function `read_csv` or the base R function `read.csv` to import data. `read_csv` is superior in several ways because its defaults are less likely to create mistakes during import. If you are working in an R project (which I highly recommend), then the filepath is just the name of the CSV. Check out a cheatsheet for `readr` **[here.](https://rawgit.com/rstudio/cheatsheets/master/data-import.pdf)**
 
 ```{r}
 
@@ -127,10 +140,11 @@ DATAFRAME <- read_csv('filepath.csv')
 
 ```
 
+<br>
+
 ### Wrangle data with `dplyr`
 
-
-Check out a cheat sheet for dplyr [here.](https://rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf)
+Check out a cheat sheet for dplyr **[here.](https://rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf)**
  
 ```{r}
 
@@ -157,9 +171,11 @@ dataframe5 <- summarize(dataframe4,
 
 ```
 
+<br>
+
 ### Organize code with `magrittr`
 
-The `tidyverse` also contains a handy tool for organizing code in a much more intuitive way: the pipe function ` %>% `. The pipe is a little different than other functions in R; it acts as a connector between phrases of code, translating roughly into "and then..." The pipe allows you to string together several functions that you would like to perform on the same data frame, without renaming the data frame name at each step (like the messy code in the previous code chunk. The pipe works best with  tidyverse functions, especially `dplyr` functions. You can read documentation on the pipe [here.](https://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html) (I highly recommend this article; it is informative and also hilarious.)
+The tidyverse also contains a handy tool for organizing code in a much more intuitive way: the pipe function ` %>% `. The pipe is a little different than other functions in R; it acts as a connector between phrases of code, translating roughly into "and then..." The pipe allows you to string together several functions that you would like to perform on the same data frame, without renaming the data frame name at each step (like the messy code in the previous code chunk. The pipe works best with  tidyverse functions, especially `dplyr` functions. You can read documentation on the pipe **[here.](https://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html)** (I highly recommend this article; it is informative and also hilarious.)
 
 ```{r}
 
@@ -178,9 +194,11 @@ new_dataframe <- DATAFRAME %>%
 
 ```
 
+<br>
+
 ### Visualize data with `ggplot2`
 
-There are several ways to make a bar graph in R; I highly recommend using the `ggplot` function from the `ggplot2` package. For the bar charts that we create for this class, you first need to wrangle the data into a summary table, using `dplyr` functions. Check out a cheatsheet for `ggplot2` [here.](https://rstudio.com/wp-content/uploads/2016/11/ggplot2-cheatsheet-2.1.pdf)
+There are several ways to make a bar graph in R; I highly recommend using the `ggplot` function from the `ggplot2` package. For the bar charts that we create for this class, you first need to wrangle the data into a summary table, using `dplyr` functions. Check out a cheatsheet for `ggplot2` **[here.](https://rstudio.com/wp-content/uploads/2016/11/ggplot2-cheatsheet-2.1.pdf)**
 
 ```{r}
 
@@ -207,4 +225,8 @@ ggplot(summary_table, aes(x = PREDICTOR, y = RESPONSE)) +
 
 ```
 
+<br>
 
+<font size="1"> *Created by Kate Culhane, updated 2021* </font>
+ 
+<font size="1"> *Dept. of Ecology, Evolution, and Marine Biology, UCSB* </font> 
